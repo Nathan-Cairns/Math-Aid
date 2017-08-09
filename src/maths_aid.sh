@@ -76,10 +76,10 @@ function listCreations {
   clear
   pushd creations &> /dev/null
 
-  declare -a creationList
-  ##TODO make sure it is only .mp4s in the directory!!!!!!
-  if [ "$(ls -A)" ]; then
-    updateArrayOfCreations $creationList
+
+
+  if [ "$(ls | grep mp4$ | wc -l)" -gt 0 ]; then
+    updateArrayOfCreations
 
     echo
     echo "    Existing creations: "
@@ -105,6 +105,7 @@ function listCreations {
 ###################################
 #### Create a new creation (c) ####
 ###################################
+## TODO ask user if they are sure they want to exit!!!!!!
 function makeCreation() {
 
   while true; do
@@ -249,4 +250,5 @@ function deleteCreationComponents {
 
 
 # Code start
+declare -a creationList
 promptUser
