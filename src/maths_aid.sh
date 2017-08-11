@@ -26,25 +26,32 @@ function displayMenu() {
     (q)uit authoring tool"
 }
 function promptUser() {
-  # Create creations dir
-  mkdir -p creations/
-  while true; do
     clear
     displayTitle
     displayMenu
-    read -p"
-    Enter a selection [l/p/d/c/q]: " instruction
+    echo
+    read -n 1 -s -r -p "    Enter a selection [l/p/d/c/q]: " instruction
     case $instruction in
       [Qq] )
         clear
-        exit
+        echo
+        read -n 1 -s -r -p "   Are you sure you want to quit? [y/n]: " reply
+        if [ $reply == y ] || [ $reply == Y ]; then
+          clear
+          exit
+        fi
       ;;
       [Cc] )
-        clear
         makeCreation
       ;;
       [Ll] )
         listCreations
+      ;;
+      [Pp] )
+        playCreation
+      ;;
+      [Dd] )
+        deleteCreation
       ;;
       * )
         clear
@@ -54,8 +61,7 @@ function promptUser() {
         clear
       ;;
     esac
-
-  done
+    promptUser
 }
 
 ###########################
@@ -64,11 +70,24 @@ function promptUser() {
 
 # Assigns a list of creation names to an array it is parsed.
 function updateArrayOfCreations {
+  creationList=()
   i=1
   for file in *.mp4 ; do
-    creationList[i]=$(basename "$file" | cut -f 1 -d '.')
+    creationList[i]="$file"
     i=$(($i+1))
   done
+}
+
+function displayCreationList {
+  echo
+  echo "    Existing creations: "
+  echo "======================================"
+  i=1
+  for creation in "${creationList[@]}" ; do
+    echo "      ($i) $(basename "$creation"| cut -f 1 -d '.')"
+    i=$(($i+1))
+  done
+  echo "======================================"
 }
 
 # Used to listCreations
@@ -76,18 +95,9 @@ function listCreations {
   clear
   pushd creations &> /dev/null
 
-
-
   if [ "$(ls | grep mp4$ | wc -l)" -gt 0 ]; then
     updateArrayOfCreations
-
-    echo
-    echo "    Existing creations: "
-    i=1
-    for creation in "${creationList[@]}" ; do
-      echo "    ($i) $creation"
-      i=$(($i+1))
-    done
+    displayCreationList
     echo
     read -n 1 -s -r -p "    Press any key to exit back to main menu: "
   else
@@ -102,75 +112,220 @@ function listCreations {
 #### Play an existing creation (p) ####
 #######################################
 
+function playCreation {
+  clear
+
+  pushd creations &> /dev/null
+
+  updateArrayOfCreations
+  displayCreationList
+
+  echo
+  read -p "   Enter the number of the creation you wish to Play or q to quit: " i
+
+  if [ $i -le ${#creationList[@]} ] && [ $i -gt 0 ] && [ $i -eq $i 2>/dev/null ]; then
+    clear
+    echo
+    echo "    Playing creation: $(basename "${creationList[${i}]}"| cut -f 1 -d '.')"
+    ffplay -autoexit "${creationList[${i}]}" &> /dev/null
+    playCreation
+  elif [ $i == q ] || [ $i == Q ]; then
+    echo
+  else
+    clear
+    echo
+    echo "    Please input a number from the list!"
+    sleep 1
+    playCreation
+  fi
+
+  popd
+}
+
+###############################
+#### Delete a creation (d) ####
+###############################
+function deleteCreation {
+  clear
+
+  pushd creations &> /dev/null
+
+  updateArrayOfCreations
+  displayCreationList
+
+  echo
+  read -p "   Enter the number of the creation you wish to delete or q to quit: " i
+
+  if [ $i -le ${#creationList[@]} ] && [ $i -gt 0 ] && [ $i -eq $i 2>/dev/null ]; then
+    clear
+    echo
+    read -n 1 -s -r -p "    Are you sure you want to delete $(basename "${creationList[${i}]}"| cut -f 1 -d '.')? [y/n]: " reply
+    case $reply in
+      [Yy] )
+        rm "${creationList[${i}]}"
+        echo
+        echo "    $(basename "${creationList[${i}]}"| cut -f 1 -d '.') deleted"
+        sleep 1
+      ;;
+      * )
+        echo
+        echo "    deletion aborted"
+        sleep 1
+      ;;
+    esac
+    deleteCreation
+  elif [ $i == q ] || [ $i == Q ]; then
+      echo
+  else
+    clear
+    echo
+    echo "    Please input a number from the list!"
+    sleep 1
+    deleteCreation
+  fi
+
+  popd
+}
+
+
 ###################################
 #### Create a new creation (c) ####
 ###################################
+function creationNameMenu {
+  # Ask user about the name they selected
+    clear
+    echo
+    echo "   Creation created: name = "$name", what do you wish to do next?"
+    echo "      (r)ename your creation"
+    echo "      (k)eep your creation as is and proceed to audio recording"
+    echo "      (q)uit **WARNING** aborting now will erase your progress"
+    read -n 1 -s -r -p "   Enter a selction: " answer
+  case $answer in
+    [Rr] )
+      rm "$visualComponent"
+      makeCreation
+    ;;
+    [kK] )
+      echo
+      createAudio "$name" "$audioComponent"
+    ;;
+    [qQ] )
+      clear
+      echo
+      read -n 1 -s -r -p "    Are you sure you want to abort? Progress will be lost? [y/n]: " reply
+      case $reply in
+        [Yy] )
+          deleteCreationComponents "$visualComponent"
+        ;;
+        * )
+        creationNameMenu
+        ;;
+      esac
+    ;;
+    * )
+      clear
+      echo
+      echo "    Invalid input please input a value from the list!"
+      sleep 1
+      creationNameMenu
+    ;;
+  esac
+}
+
 ## TODO ask user if they are sure they want to exit!!!!!!
 function makeCreation() {
+  clear
 
-  while true; do
     echo
-    read -p "   Please name your creation or press \"q\" to exit: " name
+    read -p "   Please name your creation: " name
     visualComponent=creations/"$name"_vComp.mp4
     audioComponent=creations/"$name"_aComp.wav
-    case $name in
-      [Qq] )
-        break
-        ;;
-      * )
-
-        if [ -e "$visualComponent" ]; then
+        if [ -e creations/"$name".mp4 ]; then
           clear
           echo
           echo "   Creation already exists please pick another name"
+          sleep 1
+          makeCreation
         else
-          createCreation "$name" "$visualComponent"
-          echo
-          # Ask user about the name they selected
-          while true; do
-            clear
-            echo
-            echo "   Creation created: name = "$name", what do you wish to do next?"
-            echo "      (r)ename your creation"
-            echo "      (k)eep your creation as is and proceed to audio recording"
-            echo "      (q)uit **WARNING** aborting now will erase your progress"
-            read -p "   Enter a selction: " answer
-          case $answer in
-            [Rr] )
-              rm "$visualComponent"
-              makeCreation
-              break 2
-            ;;
-            [kK] )
-              echo
-              createAudio "$name" "$audioComponent"
-              break 2
-            ;;
-            [qQ] )
-              deleteCreationComponents "$visualComponent"
-              break 2
-            ;;
-            * )
-              clear
-              echo
-              echo "    Invalid input please input a value from the list!"
-              sleep 1
-              clear
-            ;;
-          esac
-        done
+          #create the creation
+          ffmpeg -f lavfi -i color=c=orange:s=320x240:d=3.0 -vf \
+          "drawtext=fontfile=/path/to/font.ttf:fontsize=30: \
+          fontcolor=green:x=(w-text_w)/2:y=(h-text_h)/2:text=$name" \
+          -t 3 "$visualComponent" &> /dev/null
+
+          creationNameMenu $name $visualComponent $audioComponent
+
+          # Check if creation was succesfully made and as the user if they wish to review it
+          if [ -e creations/"$name".mp4 ]; then
+            reviewCreation
+          fi
         fi
-      ;;
-    esac
-  done
 }
 
-function createCreation () {
-  #create the creation
-  ffmpeg -f lavfi -i color=c=orange:s=320x240:d=3.0 -vf \
-  "drawtext=fontfile=/path/to/font.ttf:fontsize=30: \
-  fontcolor=green:x=(w-text_w)/2:y=(h-text_h)/2:text=$name" \
-  -t 3 "$visualComponent" &> /dev/null
+function reviewCreation {
+  clear
+  echo
+  read -n 1 -s -r -p "   Do you wish to review your creation before being returned to the main menu? [y/n]: " reply
+  case $reply in
+    [Yy] )
+      ffplay -autoexit creations/"$name".mp4 &> /dev/null
+    ;;
+    * )
+
+    ;;
+  esac
+}
+
+function creationAudioMenu {
+  clear
+  echo
+  echo "    Audio successfully recorded... "
+  echo
+  echo "    What do you wish to do with your recording?"
+  echo "      (l)isten to your recording"
+  echo "      (r)edo your recording"
+  echo "      (k)eep your recording and finish making creation"
+  echo "      (q)uit **WARNING** aborting now will erase your progress"
+  read -n 1 -s -r -p "    Enter a selection: " answer
+  case $answer in
+    [Ll] )
+      ffplay -autoexit "$audioComponent" &> /dev/null
+      creationAudioMenu
+      ;;
+    [Rr] )
+      rm "$audioComponent"
+      createAudio
+    ;;
+    [Kk])
+      combineAudioAndVideo "$visualComponent" "$audioComponent" "$name"
+      clear
+      echo
+      echo "    Creation successfully created!"
+      sleep 1
+    ;;
+    [Qq] )
+      clear
+      echo
+      read -n 1 -s -r -p "    Are you sure you want to exit? Progress will be lost [y/n]: " reply
+      case $reply in
+        [Yy] )
+          deleteCreationComponents "$visualComponent" "$audioComponent"
+        ;;
+        * )
+          creationAudioMenu
+        ;;
+      esac
+    ;;
+    * )
+      clear
+      echo
+      echo "    Invalid input please input a value from the list!"
+      sleep 1
+      clear
+      creationAudioMenu
+    ;;
+
+  esac
 }
 
 function createAudio {
@@ -185,52 +340,12 @@ function createAudio {
 #  echo "    Recording in 1..."
 #  sleep 1
   echo "   Recording"
+
+  # Create the audioComponent
   ffmpeg -f alsa -i hw:0 -t 3 "$audioComponent" &> /dev/null
   clear
 
-  while true; do
-    # re record audio if necessary
-    echo
-    echo "    Audio successfully recorded... "
-    echo
-    echo "    What do you wish to do with your recording?"
-    echo "      (l)isten to your recording"
-    echo "      (r)edo your recording"
-    echo "      (k)eep your recording and finish making creation"
-    echo "      (q)uit **WARNING** aborting now will erase your progress"
-    read -p "    Enter a selection: " answer
-    case $answer in
-      [Ll] )
-        ffplay -autoexit "$audioComponent" &> /dev/null
-        ;;
-      [Rr] )
-        rm "$audioComponent"
-        createAudio
-        break
-      ;;
-      [Kk])
-        combineAudioAndVideo "$visualComponent" "$audioComponent" "$name"
-        clear
-        echo
-        echo "    Creation successfully created!"
-        sleep 1
-        break
-      ;;
-      [Qq] )
-        deleteCreationComponents "$visualComponent" "$audioComponent"
-        break
-      ;;
-      * )
-        clear
-        echo
-        echo "    Invalid input please input a value from the list!"
-        sleep 1
-        clear
-      ;;
-
-    esac
-    clear
-  done
+  creationAudioMenu $audioComponent
 }
 
 function combineAudioAndVideo {
@@ -250,5 +365,8 @@ function deleteCreationComponents {
 
 
 # Code start
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+mkdir -p "$DIR"/creations/
 declare -a creationList
+
 promptUser
