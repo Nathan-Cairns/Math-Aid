@@ -93,7 +93,7 @@ function displayCreationList {
 # Used to listCreations
 function listCreations {
   clear
-  pushd creations &> /dev/null
+  pushd "$DIR"/creations &> /dev/null
 
   if [ "$(ls | grep mp4$ | wc -l)" -gt 0 ]; then
     updateArrayOfCreations
@@ -115,28 +115,32 @@ function listCreations {
 function playCreation {
   clear
 
-  pushd creations &> /dev/null
+  pushd "$DIR"/creations &> /dev/null
 
-  updateArrayOfCreations
-  displayCreationList
-
-  echo
-  read -p "   Enter the number of the creation you wish to Play or q to quit: " i
-
-  if [ $i -le ${#creationList[@]} ] && [ $i -gt 0 ] && [ $i -eq $i 2>/dev/null ]; then
-    clear
+  if [ "$(ls | grep mp4$ | wc -l)" -gt 0 ]; then
+    updateArrayOfCreations
+    displayCreationList
     echo
-    echo "    Playing creation: $(basename "${creationList[${i}]}"| cut -f 1 -d '.')"
-    ffplay -autoexit "${creationList[${i}]}" &> /dev/null
-    playCreation
-  elif [ $i == q ] || [ $i == Q ]; then
+    read -p "   Enter the number of the creation you wish to Play or q to quit: " i
+    if [ $i -le ${#creationList[@]} ] && [ $i -gt 0 ] && [ $i -eq $i 2>/dev/null ]; then
+      clear
+      echo
+      echo "    Playing creation: $(basename "${creationList[${i}]}"| cut -f 1 -d '.')"
+      ffplay -autoexit "${creationList[${i}]}" &> /dev/null
+      playCreation
+    elif [ $i == q ] || [ $i == Q ]; then
+      echo
+    else
+      clear
+      echo
+      echo "    Please input a number from the list!"
+      sleep 1
+      playCreation
+  fi
+    else
     echo
-  else
-    clear
-    echo
-    echo "    Please input a number from the list!"
+    echo "    There are no creations :("
     sleep 1
-    playCreation
   fi
 
   popd
@@ -148,8 +152,8 @@ function playCreation {
 function deleteCreation {
   clear
 
-  pushd creations &> /dev/null
-
+  pushd "$DIR"/creations &> /dev/null
+  if [ "$(ls | grep mp4$ | wc -l)" -gt 0 ]; then
   updateArrayOfCreations
   displayCreationList
 
@@ -183,6 +187,11 @@ function deleteCreation {
     sleep 1
     deleteCreation
   fi
+else
+echo
+echo "    There are no creations :("
+sleep 1
+fi
 
   popd
 }
@@ -234,13 +243,14 @@ function creationNameMenu {
 
 ## TODO ask user if they are sure they want to exit!!!!!!
 function makeCreation() {
+  mkdir -p "$DIR"/creations/
   clear
 
     echo
     read -p "   Please name your creation: " name
-    visualComponent=creations/"$name"_vComp.mp4
-    audioComponent=creations/"$name"_aComp.wav
-        if [ -e creations/"$name".mp4 ]; then
+    visualComponent="$DIR"/creations/"$name"_vComp.mp4
+    audioComponent="$DIR"/creations/"$name"_aComp.wav
+        if [ -e "$DIR"/creations/"$name".mp4 ]; then
           clear
           echo
           echo "   Creation already exists please pick another name"
@@ -256,7 +266,7 @@ function makeCreation() {
           creationNameMenu $name $visualComponent $audioComponent
 
           # Check if creation was succesfully made and as the user if they wish to review it
-          if [ -e creations/"$name".mp4 ]; then
+          if [ -e "$DIR"/creations/"$name".mp4 ]; then
             reviewCreation
           fi
         fi
@@ -268,7 +278,7 @@ function reviewCreation {
   read -n 1 -s -r -p "   Do you wish to review your creation before being returned to the main menu? [y/n]: " reply
   case $reply in
     [Yy] )
-      ffplay -autoexit creations/"$name".mp4 &> /dev/null
+      ffplay -autoexit "$DIR"/creations/"$name".mp4 &> /dev/null
     ;;
     * )
 
@@ -350,7 +360,7 @@ function createAudio {
 
 function combineAudioAndVideo {
   ffmpeg -i "$visualComponent" -i "$audioComponent" -c:v copy -c:a aac \
-   -strict experimental creations/"$name".mp4 &> /dev/null
+   -strict experimental "$DIR"/creations/"$name".mp4 &> /dev/null
    deleteCreationComponents "$visualComponent" "$audioComponent"
 }
 
