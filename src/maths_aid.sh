@@ -405,7 +405,7 @@ function createAudio {
   echo "   Recording"
 
   # Create the audioComponent
-  ffmpeg -f alsa -i hw:0 -t 3 "$audioComponent" &> /dev/null
+  ffmpeg -f alsa -i "default" -t 3 "$audioComponent" &> /dev/null
   clear
 
   creationAudioMenu $audioComponent
