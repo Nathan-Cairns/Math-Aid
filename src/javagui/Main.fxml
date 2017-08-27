@@ -17,13 +17,9 @@
             <SplitPane dividerPositions="0.28691275167785235" focusTraversable="true" orientation="VERTICAL" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-1.0">
               <items>
                 <AnchorPane>
-                  <children>
-                    <HBox alignment="CENTER" prefHeight="168.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                      <children>
-                        <ImageView fx:id="image_view" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS" />
-                      </children>
-                    </HBox>
-                  </children>
+                           <children>
+                              <ImageView pickOnBounds="true" preserveRatio="true" />
+                           </children>
                 </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                   <children>

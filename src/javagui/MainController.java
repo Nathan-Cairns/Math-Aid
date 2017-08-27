@@ -35,7 +35,6 @@ public class MainController implements Initializable{
 	private final String CREATION_AUDIO_DIALOG_HEADER = "Recording";
 	
 	private CreationModel _creationModel = new MathsAidCreationModel();
-	private String _creationName;
 
 	@FXML
 	private Button play_button;
@@ -74,8 +73,17 @@ public class MainController implements Initializable{
 	public void deleteCreation(ActionEvent event) {
 		String creationName = creation_list.getSelectionModel().getSelectedItem();
 		
-		_creationModel.deleteCreation(creationName);
-		
+		Task<Void> deletionTask = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				_creationModel.deleteCreation(creationName);
+				return null;
+			}
+		};
+		Thread th = new Thread(deletionTask);
+		th.setDaemon(true);
+		th.start();
+
 		creation_list.getItems().remove(creationName);
 	}
 	
@@ -84,9 +92,17 @@ public class MainController implements Initializable{
 	public void playCreation(ActionEvent event) {
 		String creationName = creation_list.getSelectionModel().getSelectedItem();
 		
-		_creationModel.playCreation(creationName);
+		Task<Void> playTask = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				_creationModel.playCreation(creationName);
+				return null;
+			}
+		};
 		
-		creation_list.getItems().remove(creationName);
+		Thread th = new Thread(playTask);
+		th.setDaemon(true);
+		th.start();
 	}
 	
 	///// Creation Button Methods \\\\\
