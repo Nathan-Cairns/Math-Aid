@@ -85,21 +85,21 @@ public class MathsAidBashCreation implements Creation{
 				+ " fontcolor="+_fontColour+":x=(w-text_w)/2:y=(h-text_h)/2:text='" + _creationName + "'\" "
 				+ "\"" + _videoComponent + "\"";
 
-		processor(command);
+		processCommand(command);
 		
 	}
 	
 	private void createAudioComponent() {
 		String command = "ffmpeg -f alsa -i \"default\" -t "+ _length +" \"" + _audioComponent + "\"";
 
-		processor(command);
+		processCommand(command);
 	}
 	
 	private void combineAudioAndVideo() {
 		String command = "ffmpeg -i " + _videoComponent +" -i " + _audioComponent + " -c:v copy -c:a aac"
 				+ " -strict experimental " + _creationName + MP4;
 
-		processor(command);
+		processCommand(command);
 	}
 	
 	private void deleteCreationComponents() {
@@ -122,7 +122,9 @@ public class MathsAidBashCreation implements Creation{
 	}
 	
 	public void play() {
+		String command = "ffplay -autoexit \""+_fullFileName+"\"";
 		
+		processCommand(command);
 	}
 	
 	public void delete() {
@@ -133,7 +135,11 @@ public class MathsAidBashCreation implements Creation{
 		return _creationName;
 	}
 	
-	protected final void processor(String command) {
+	public File file() {
+		return new File(CREATIONS_FOLDER + System.getProperty("file.separator") +_fullFileName);
+	}
+	
+	protected final void processCommand(String command) {
 		ProcessBuilder pb = new ProcessBuilder(BASH, "-c", command);
 		pb.directory(CREATIONS_FOLDER);
 

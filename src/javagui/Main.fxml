@@ -18,7 +18,7 @@
               <items>
                 <AnchorPane>
                            <children>
-                              <ImageView pickOnBounds="true" preserveRatio="true" />
+                              <ImageView fx:id="creation_thumbnail" pickOnBounds="true" preserveRatio="true" />
                            </children>
                 </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
@@ -34,7 +34,10 @@
           <children>
             <SplitPane dividerPositions="0.8942953020134228" focusTraversable="true" orientation="VERTICAL" prefHeight="598.0" prefWidth="590.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <MediaView fx:id="media_view" fitHeight="240.0" fitWidth="320.0" layoutX="134.0" layoutY="145.0" />
+                           </children></AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="57.0" prefWidth="588.0">
                   <children>
                     <HBox id="HBox" alignment="CENTER" spacing="50.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0">

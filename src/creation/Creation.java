@@ -1,5 +1,7 @@
 package creation;
 
+import java.io.File;
+
 public interface Creation {
 	public void create();
 	
@@ -8,4 +10,6 @@ public interface Creation {
 	public void delete();
 	
 	public String name();
+	
+	public File file();
 }

@@ -1,5 +1,6 @@
 package creation;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +22,15 @@ public abstract class CreationModel {
 	
 	protected abstract void updateModel();
 	
+	public File getCreationFile(String creationName) {
+		Creation creation = getCreation(creationName);
+		
+		return creation.file();
+	}
+	
 	public void deleteCreation(String creationName) {
-		Creation creationToPlay = getCreation(creationName);
-		creationToPlay.delete();
+		Creation creationToDelete = getCreation(creationName);
+		creationToDelete.delete();
 		_creations.remove(creationName);
 	}
 	

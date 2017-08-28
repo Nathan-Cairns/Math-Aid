@@ -13,14 +13,18 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.image.ImageView;
+import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -51,6 +55,12 @@ public class MainController implements Initializable{
 	@FXML
 	private ListView<String> creation_list;
 
+	@FXML
+	private ImageView creation_thumbnail;
+	
+	@FXML 
+	private MediaView media_view;
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		// TODO BACKGROUND THREAD????????s
@@ -59,8 +69,10 @@ public class MainController implements Initializable{
 		creation_list.setItems(creationNames);
 		
 		creation_list.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		
 	}
-
+	
+	///// List handling methods \\\\\
 
 	///// Quit button methods \\\\\
 	
@@ -71,31 +83,60 @@ public class MainController implements Initializable{
 	///// Delete button methods \\\\\
 	
 	public void deleteCreation(ActionEvent event) {
+		
 		String creationName = creation_list.getSelectionModel().getSelectedItem();
 		
-		Task<Void> deletionTask = new Task<Void>() {
-			@Override
-			protected Void call() throws Exception {
-				_creationModel.deleteCreation(creationName);
-				return null;
-			}
-		};
-		Thread th = new Thread(deletionTask);
-		th.setDaemon(true);
-		th.start();
+		boolean confirmation = false;
+		if (creationName != null && !creationName.equals("")) {
+			confirmation = confirmDeletion(creationName);
+		}
+		
+		if (confirmation) {
+			Task<Void> deletionTask = new Task<Void>() {
+				@Override
+				protected Void call() throws Exception {
+					_creationModel.deleteCreation(creationName);
+					return null;
+				}
+			};
+			Thread th = new Thread(deletionTask);
+			th.setDaemon(true);
+			th.start();
 
-		creation_list.getItems().remove(creationName);
+			creation_list.getItems().remove(creationName);
+		} 
+
+	}
+	
+	public boolean confirmDeletion(String creationName) {
+		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		alert.setTitle("Delete");
+		alert.setContentText("Are you sure you want to delete " + creationName);
+		
+		ButtonType yesButton = new ButtonType("Yes", ButtonData.YES);
+		ButtonType noButton = new ButtonType("no", ButtonData.NO);
+		
+		
+		alert.getButtonTypes().setAll(yesButton, noButton);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == yesButton) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 	
 	///// Play button methods \\\\\ 
 	
 	public void playCreation(ActionEvent event) {
 		String creationName = creation_list.getSelectionModel().getSelectedItem();
-		
+	
 		Task<Void> playTask = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
 				_creationModel.playCreation(creationName);
+				
 				return null;
 			}
 		};
@@ -181,23 +222,19 @@ public class MainController implements Initializable{
 			th.start();
 			
 			// can use an Alert, Dialog, or PopupWindow as needed...
-			Stage popup = new Stage();
-			// configure UI for popup etc...
-
+			Alert popup = new Alert(AlertType.INFORMATION);
+			popup.setHeaderText("Recording audio...");
+			popup.setTitle("Recording");
+						
 			// hide popup after 3 seconds:
 			PauseTransition delay = new PauseTransition(Duration.seconds(3));
-			delay.setOnFinished(e -> popup.hide());
+			delay.setOnFinished(e -> popup.close());
 
-			popup.centerOnScreen();
-			popup.setTitle("Recording");
 			popup.show();
-
 			delay.play();
 
 		} else {
 			alert.close();
 		}
 	}
-
-
 }
