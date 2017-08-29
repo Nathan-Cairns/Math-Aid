@@ -50,7 +50,7 @@ public abstract class CreationModel {
 	 * @param creationName
 	 * @return
 	 */
-	private Creation getCreation(String creationName) {
+	protected Creation getCreation(String creationName) {
 		if (creationName == null || creationName == "") {
 			throw new CreationException("Invalid creation name (" + creationName + ")");
 		} else if (!_creations.containsKey(creationName)){ 

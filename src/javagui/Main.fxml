@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.scene.media.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
@@ -10,20 +11,20 @@
 <VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javagui.MainController">
   <!-- TODO Add Nodes -->
   <children>
-    <SplitPane dividerPositions="0.2568922305764411" focusTraversable="true" VBox.vgrow="ALWAYS">
+    <SplitPane dividerPositions="0.3182957393483709" focusTraversable="true" VBox.vgrow="ALWAYS">
       <items>
-        <AnchorPane>
+        <AnchorPane SplitPane.resizableWithParent="false">
           <children>
             <SplitPane dividerPositions="0.28691275167785235" focusTraversable="true" orientation="VERTICAL" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-1.0">
               <items>
-                <AnchorPane>
+                <AnchorPane SplitPane.resizableWithParent="false">
                            <children>
-                              <ImageView fx:id="creation_thumbnail" pickOnBounds="true" preserveRatio="true" />
+                              <MediaView fx:id="creation_thumbnail" fitHeight="184.0" fitWidth="216.0" layoutX="16.0" AnchorPane.bottomAnchor="0.0" />
                            </children>
                 </AnchorPane>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                <AnchorPane SplitPane.resizableWithParent="false">
                   <children>
-                    <ListView fx:id="creation_list" prefHeight="421.0" prefWidth="199.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    <ListView fx:id="creation_list" onMouseClicked="#handleListItemSelected" AnchorPane.topAnchor="0.0" />
                   </children>
                 </AnchorPane>
               </items>
@@ -34,13 +35,13 @@
           <children>
             <SplitPane dividerPositions="0.8942953020134228" focusTraversable="true" orientation="VERTICAL" prefHeight="598.0" prefWidth="590.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                <AnchorPane fx:id="media_player_parent" onMouseClicked="#handleListItemSelected" SplitPane.resizableWithParent="false">
                            <children>
-                              <MediaView fx:id="media_view" fitHeight="240.0" fitWidth="320.0" layoutX="134.0" layoutY="145.0" />
+                              <MediaView fx:id="media_view" fitHeight="240.0" fitWidth="320.0" layoutX="134.0" layoutY="145.0" AnchorPane.bottomAnchor="138.0" AnchorPane.leftAnchor="134.0" AnchorPane.rightAnchor="84.0" AnchorPane.topAnchor="145.0" />
                            </children></AnchorPane>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="57.0" prefWidth="588.0">
+                <AnchorPane SplitPane.resizableWithParent="false">
                   <children>
-                    <HBox id="HBox" alignment="CENTER" spacing="50.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0">
+                    <HBox id="HBox" alignment="CENTER" spacing="50.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0">
                       <children>
                         <Button fx:id="play_button" mnemonicParsing="false" onAction="#playCreation" text="Play" />
                         <Button fx:id="create_button" mnemonicParsing="false" onAction="#createCreation" text="Create" />
@@ -55,6 +56,9 @@
           </children>
         </AnchorPane>
       </items>
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
     </SplitPane>
   </children>
 </VBox>

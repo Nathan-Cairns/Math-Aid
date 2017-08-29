@@ -12,8 +12,9 @@ public class MathsAidBashCreation implements Creation{
 	public static final String BASH = "/bin/bash";
 	public static final File CREATIONS_FOLDER = new File(
 			System.getProperty("user.dir") + System.getProperty("file.separator") + "creations");
-	public static final String MP4 = ".mp4";
+	public static final String MP4 = ".mp4"; // TODO mp4 !!!!!
 	public static final String WAV = ".wav";
+	public static final String JPG = ".jpg";
 	
 	public static final String DEFAULT_COLOUR = "blue";
 	public static final String DEFAULT_FONT_COLOUR = "white";
@@ -59,21 +60,19 @@ public class MathsAidBashCreation implements Creation{
 		
 		_audioComponent = name + "_ac." + WAV;
 		_videoComponent = name + "_vc." + MP4;
-
 		_fullFileName = _creationName + MP4;
 	}
 	
 	@Override
 	public void create() {
-		creationFolder();
+		createCreationFolder();
 		createAudioComponent();
 		createVideoComponent();
 		combineAudioAndVideo();
 		deleteCreationComponents();
-		
 	}
 	
-	public void creationFolder() {
+	public static void createCreationFolder() {
 		if (!CREATIONS_FOLDER.exists()) {
 			CREATIONS_FOLDER.mkdir();
 		}
@@ -154,8 +153,6 @@ public class MathsAidBashCreation implements Creation{
 		}
 		
 	}
-
-
 	
 }
 

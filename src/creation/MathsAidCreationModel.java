@@ -36,15 +36,17 @@ public class MathsAidCreationModel extends CreationModel{
 
 	@Override
 	public void updateModel() {
+		MathsAidBashCreation.createCreationFolder();
 		File f = MathsAidBashCreation.CREATIONS_FOLDER;
 		
 		List<String> names = new ArrayList<String>(Arrays.asList(f.list()));
 		
 		for (String name : names) {
-			name = name.substring(0, name.lastIndexOf('.'));
-			Creation creation = new MathsAidBashCreation(name);
-			_creations.put(name, creation);
+			if (name.substring(name.lastIndexOf('.'), name.length()).equals(MathsAidBashCreation.MP4)) {
+				name = name.substring(0, name.lastIndexOf('.'));
+				Creation creation = new MathsAidBashCreation(name);
+				_creations.put(name, creation);
+			}
 		}
 	}
-
 }
