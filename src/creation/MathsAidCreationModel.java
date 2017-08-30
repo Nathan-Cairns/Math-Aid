@@ -5,14 +5,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This class represents a CreationModel which contains Creations
+ * of type MathsAidBashCreation. This class is used to provide
+ * functionality to a GUI.
+ * 
+ * @author Nathan Cairns
+ *
+ */
 public class MathsAidCreationModel extends CreationModel{
 	
+	/**
+	 * Constructor.
+	 */
 	public MathsAidCreationModel() {
 		super();
 	}
-
+	
+	/**
+	 * Add a creation to the model.
+	 * Creates a creation.
+	 * Puts the creation in the hashmap.
+	 */
 	@Override
 	public void addCreation(Creation creation) {
+		// Create the creation
 		creation.create();
 		
 		// Store creation in the list.
@@ -20,6 +37,11 @@ public class MathsAidCreationModel extends CreationModel{
 		
 	}
 	
+	/**
+	 * Add a creation to the model.
+	 * Constructs a new creation from the string it is parsed.
+	 * Creates the creations and puts the creation in the hashmap.
+	 */
 	@Override
 	public void addCreation(String creationName){
 		if (creationName == null || creationName == "") {
@@ -33,7 +55,12 @@ public class MathsAidCreationModel extends CreationModel{
 		
 		addCreation(creation);
 	}
-
+	
+	/**
+	 * Update the model.
+	 * Look in the creation folder and add any .mp4s to
+	 * the model.
+	 */
 	@Override
 	public void updateModel() {
 		MathsAidBashCreation.createCreationFolder();

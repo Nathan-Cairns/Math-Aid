@@ -15,16 +15,16 @@
       <items>
         <AnchorPane SplitPane.resizableWithParent="false">
           <children>
-            <SplitPane dividerPositions="0.28691275167785235" focusTraversable="true" orientation="VERTICAL" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-1.0">
+            <SplitPane dividerPositions="0.28691275167785235" focusTraversable="true" orientation="VERTICAL">
               <items>
                 <AnchorPane SplitPane.resizableWithParent="false">
                            <children>
-                              <MediaView fx:id="creation_thumbnail" fitHeight="184.0" fitWidth="216.0" layoutX="16.0" AnchorPane.bottomAnchor="0.0" />
+                              <MediaView fx:id="creation_thumbnail" fitHeight="184.0" fitWidth="216.0" layoutX="16.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="0.0" />
                            </children>
                 </AnchorPane>
                 <AnchorPane SplitPane.resizableWithParent="false">
                   <children>
-                    <ListView fx:id="creation_list" onMouseClicked="#handleListItemSelected" AnchorPane.topAnchor="0.0" />
+                    <ListView fx:id="creation_list" onMouseClicked="#handleListItemSelected" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                   </children>
                 </AnchorPane>
               </items>
@@ -35,9 +35,9 @@
           <children>
             <SplitPane dividerPositions="0.8942953020134228" focusTraversable="true" orientation="VERTICAL" prefHeight="598.0" prefWidth="590.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <AnchorPane fx:id="media_player_parent" onMouseClicked="#handleListItemSelected" SplitPane.resizableWithParent="false">
+                <AnchorPane onMouseClicked="#handleListItemSelected" SplitPane.resizableWithParent="false">
                            <children>
-                              <MediaView fx:id="media_view" fitHeight="240.0" fitWidth="320.0" layoutX="134.0" layoutY="145.0" AnchorPane.bottomAnchor="138.0" AnchorPane.leftAnchor="134.0" AnchorPane.rightAnchor="84.0" AnchorPane.topAnchor="145.0" />
+                              <MediaView fx:id="media_view" fitHeight="360.0" fitWidth="480.0" layoutX="63.0" layoutY="82.0" AnchorPane.bottomAnchor="81.0" AnchorPane.leftAnchor="63.0" AnchorPane.rightAnchor="63.0" AnchorPane.topAnchor="82.0" />
                            </children></AnchorPane>
                 <AnchorPane SplitPane.resizableWithParent="false">
                   <children>
