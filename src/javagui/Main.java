@@ -1,10 +1,12 @@
 package javagui;
 
 import javafx.application.Application;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 /**
  * A simple GUI application which allows a user to author creations
  * for a maths tutoring program.
@@ -13,6 +15,9 @@ import javafx.stage.Stage;
  *
  */
 public class Main extends Application{
+	
+	/* Macros */
+	public static final String TITLE = "Maths Aid";
 	
 	/**
 	 * Main entry point 
@@ -36,6 +41,7 @@ public class Main extends Application{
 			Scene scene = new Scene(root);
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false);
+			primaryStage.setTitle(TITLE);
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();

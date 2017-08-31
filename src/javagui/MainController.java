@@ -41,9 +41,24 @@ import javafx.util.Duration;
 
 public class MainController implements Initializable {
 	/* MACROS */
-	private final String CREATION_NAME_DIALOG_HEADER = "Name your creation";
-	private final String CREATION_NAME_DIALOG_DEFAULT_TEXT = "Creation Name";
-	private final String CREATION_AUDIO_DIALOG_HEADER = "Recording";
+	private static final String CREATION_NAME_DIALOG_HEADER = "Name your creation";
+	private static final String CREATION_NAME_DIALOG_DEFAULT_TEXT = "Creation Name";
+	
+	private static final String CREATION_AUDIO_DIALOG_TITLE = "Recording Dialog";
+	private static final String CREATION_AUDIO_DIALOG_HEADER = "Record Audio";
+	private static final String CREATION_AUDIO_DIALOG_MESSAGE = "Press okay to record audio";
+	
+	private static final String CREATION_SUCCESS_DIALOG_TITLE = "Success!";
+	private static final String CREATION_SUCCESS_DIALOG_HEADER = "Creation Successfully created";
+	
+	private static final String CREATION_DELETE_CONFIRM_TITLE = "Deletion";
+	private static final String CREATION_DELETE_CONFIRM_MESSAGE = "Are you sure you wish to delete ";
+	
+	private static final String OVERWRITE_CONFIRMATION_TITLE = "Existing Creation";
+	private static final String OVERWRITE_CONFIRMATION_MESSAGE = "Creation already exists do you wish to overwrite ";
+	
+	private static final String CREATION_DELETEION_SUCCESS_DIALOG_TITLE = "Deletion";
+	private static final String CREATION_DELETEION_SUCCESS_DIALOG_HEADER = "Creation deleted";
 	
 	/* fields */
 	private CreationModel _creationModel;
@@ -153,7 +168,7 @@ public class MainController implements Initializable {
 		// Confirm that the user wants to delete the creation
 		boolean confirmation = false;
 		if (creationName != null && !creationName.equals("")) {
-			confirmation = confirmDeletion(creationName);
+			confirmation = showWarningDialog(CREATION_DELETE_CONFIRM_TITLE, CREATION_DELETE_CONFIRM_MESSAGE, creationName);
 		}
 
 		// If the user wanted to delete it.
@@ -166,6 +181,11 @@ public class MainController implements Initializable {
 					return null;
 				}
 			};
+			deletionTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
+				showSuccessAlert(CREATION_DELETEION_SUCCESS_DIALOG_TITLE, CREATION_DELETEION_SUCCESS_DIALOG_HEADER, 
+						"The creation " + creationName + " was successfully deleted.");
+			});
+			
 			Thread th = new Thread(deletionTask);
 			th.setDaemon(true);
 			th.start();
@@ -173,34 +193,6 @@ public class MainController implements Initializable {
 			// Remove from the list_view
 			creation_list.getItems().remove(creationName);
 		}
-	}
-	
-	/**
-	 * Displays a dialog box to get confirmation of deletetion from
-	 * the user.
-	 * 
-	 * @param creationName : the name of the creation the user wants to delete.
-	 * @return boolean : whether the user wanted to delete creation or not.
-	 */
-	public boolean confirmDeletion(String creationName) {
-		// Create alert
-		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-		alert.setTitle("Delete");
-		alert.setContentText("Are you sure you want to delete " + creationName);
-		
-		// Create yes + no buttons
-		ButtonType yesButton = new ButtonType("Yes", ButtonData.YES);
-		ButtonType noButton = new ButtonType("no", ButtonData.NO);
-		alert.getButtonTypes().setAll(yesButton, noButton);
-		
-		// Handle the response
-		Optional<ButtonType> result = alert.showAndWait();
-		if (result.get() == yesButton) {
-			return true;
-		} else {
-			return false;
-		}
-
 	}
 
 	///// Play button methods \\\\\
@@ -227,12 +219,25 @@ public class MainController implements Initializable {
 		};
 		
 		// Upon completion set the media view's media player to that returned from the task
-		playTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, 
-				e -> media_view.setMediaPlayer(playTask.getValue()));
+		playTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
+					media_view.setMediaPlayer(playTask.getValue());
+				});
 		
+		media_view.getMediaPlayer().setOnPlaying(() ->{
+			play_button.disarm();
+		});
+		
+		media_view.getMediaPlayer().setOnEndOfMedia(() -> {
+			play_button.arm();
+		});
+		
+
+		
+
 		Thread th = new Thread(playTask);
 		th.setDaemon(true);
 		th.start();
+		
 	}
 	
 	/**
@@ -266,28 +271,42 @@ public class MainController implements Initializable {
 		String creationName = creationNamePrompt(CREATION_NAME_DIALOG_HEADER, CREATION_NAME_DIALOG_DEFAULT_TEXT);
 		
 		// Check the validity of the name and proceed with recording
-		if (creationName == null) {
+		if (creationName == null || creationName.equals("")) {
 			return;
 		}
+		
+		boolean record = false;
 		if (!_creationModel.containsCreation(creationName) && !creationName.equals("")) {
 			// Valid name proceed with recording
-			finishCreationPrompt(CREATION_AUDIO_DIALOG_HEADER, creationName);
+			record = true;
+		} else if (_creationModel.containsCreation(creationName)) {
+			boolean overwrite = showWarningDialog(OVERWRITE_CONFIRMATION_TITLE, OVERWRITE_CONFIRMATION_MESSAGE, creationName);
+				if (overwrite) {
+					_creationModel.deleteCreation(creationName);
+					creation_list.getItems().remove(creationName);
+					record = true;
+				}
 		} else {
 			// Invalid name display error dialog
 			incorrectNameDialog();
 			createCreation(event);
+			record = false;
+		}
+		
+		if (record) {
+			finishCreationPrompt(creationName);
 		}
 	}
-
+	
+ 
 	/**
 	 * Warning dialog which is displayed when user enters an incorrect creationName
 	 */
 	public void incorrectNameDialog() {
 		Alert alert = new Alert(AlertType.WARNING);
-		alert.setTitle("INVALID CREATION NAME!");
-		alert.setHeaderText("You choose an incorrect creation name!");
-		alert.setContentText("Please check you have done the following" + "\n - Name is not empty"
-				+ "\n - Creation does not already exist");
+		alert.setTitle("Empty Craetion Name");
+		alert.setHeaderText("Invalid Creation Name");
+		alert.setContentText("Please check you have entered a creationName");
 
 		alert.showAndWait();
 	}
@@ -324,12 +343,12 @@ public class MainController implements Initializable {
 	 * @param title
 	 * @param creationName
 	 */
-	public void finishCreationPrompt(String title, String creationName) {
+	public void finishCreationPrompt(String creationName) {
 		// Create the alert
 		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle("Recording Dialog");
-		alert.setHeaderText("Record Audio");
-		alert.setContentText("Press okay to record audio");
+		alert.setTitle(CREATION_AUDIO_DIALOG_TITLE);
+		alert.setHeaderText(CREATION_AUDIO_DIALOG_HEADER);
+		alert.setContentText(CREATION_AUDIO_DIALOG_MESSAGE);
 		
 		// Handle button clicks
 		Optional<ButtonType> result = alert.showAndWait();
@@ -349,11 +368,15 @@ public class MainController implements Initializable {
 			th.setDaemon(true);
 			th.start();
 			
+			// display recording dialog
+			recordingDialog(creationName);
+			
+
+			
 			// add creation to the list view
 			creation_list.getItems().add(creationName);
 			
-			// display recording dialog
-			recordingDialog();
+
 
 		} else {
 			alert.close();
@@ -361,9 +384,9 @@ public class MainController implements Initializable {
 	}
 	
 	/**
-	 * Shows a dialong which notifies the user the program is recording
+	 * Shows a dialog which notifies the user the program is recording
 	 */
-	public void recordingDialog() {
+	public void recordingDialog(String creationName) {
 		// show recording dialog
 		Alert popup = new Alert(AlertType.INFORMATION);
 		popup.setHeaderText("Recording audio...");
@@ -373,9 +396,57 @@ public class MainController implements Initializable {
 		
 		// hide popup after 3 seconds:
 		PauseTransition delay = new PauseTransition(Duration.seconds(3));
-		delay.setOnFinished(e -> popup.close());
+		delay.setOnFinished(e -> { 
+			popup.close();
+			showSuccessAlert(CREATION_SUCCESS_DIALOG_TITLE , CREATION_SUCCESS_DIALOG_HEADER, 
+					"The creation " + creationName + " was successfully created.");
+		});
 
 		popup.show();
 		delay.play();
+	}
+	
+	///// Misc \\\\\
+	
+	/**
+	 * Shows an alert which shows an event has successfully executed
+	 * 
+	 * @param title: The title of the alert
+	 * @param Message: The message of the alert
+	 */
+	public void showSuccessAlert(String title,String headerText, String Message) {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.setContentText(Message);
+		alert.show();
+	}
+	
+	/**
+	 * Displays a dialog box to get confirmation of deletetion from
+	 * the user.
+	 * 
+	 * @param creationName : the name of the creation the user wants to delete.
+	 * @return boolean : whether the user wanted to delete creation or not.
+	 */
+	public boolean showWarningDialog(String title, String message, String creationName) {
+		// Create alert
+		Alert alert = new Alert(Alert.AlertType.WARNING);
+		alert.setTitle(title);
+		alert.setContentText(message + creationName);
+		
+		// Create yes + no buttons
+		ButtonType yesButton = new ButtonType("Yes", ButtonData.YES);
+		ButtonType noButton = new ButtonType("no", ButtonData.NO);
+		alert.getButtonTypes().setAll(yesButton, noButton);
+		
+		// Handle the response
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == yesButton) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 }
