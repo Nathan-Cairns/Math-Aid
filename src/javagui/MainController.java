@@ -193,14 +193,13 @@ public class MainController implements Initializable {
 			deletionTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
 				showSuccessAlert(CREATION_DELETEION_SUCCESS_DIALOG_TITLE, CREATION_DELETEION_SUCCESS_DIALOG_HEADER, 
 						"The creation " + creationName + " was successfully deleted.");
+				// Remove from the list_view
+				creation_list.getItems().remove(creationName);
 			});
 			
 			Thread th = new Thread(deletionTask);
 			th.setDaemon(true);
 			th.start();
-			
-			// Remove from the list_view
-			creation_list.getItems().remove(creationName);
 		}
 	}
 
@@ -270,12 +269,16 @@ public class MainController implements Initializable {
 	 */
 	public void createCreation(ActionEvent event) {
 		// prompt the user for a creation name
-		String creationName = creationNamePrompt(CREATION_NAME_DIALOG_HEADER, CREATION_NAME_DIALOG_DEFAULT_TEXT);
+		String creationName = creationNamePrompt();
+
 		
 		// Check the validity of the name and proceed with recording
 		if (creationName == null || creationName.equals("")) {
 			return;
 		}
+		
+		// Trim leading and following spaces
+		creationName = creationName.trim();
 		
 		boolean record = false;
 		if (!_creationModel.containsCreation(creationName) && !creationName.equals("")) {
@@ -284,8 +287,7 @@ public class MainController implements Initializable {
 		} else if (_creationModel.containsCreation(creationName)) {
 			boolean overwrite = showWarningDialog(OVERWRITE_CONFIRMATION_TITLE, OVERWRITE_CONFIRMATION_MESSAGE, creationName);
 				if (overwrite) {
-					_creationModel.deleteCreation(creationName);
-					creation_list.getItems().remove(creationName);
+					refreshCreation(creationName);
 					record = true;
 				}
 		} else {
@@ -299,6 +301,31 @@ public class MainController implements Initializable {
 			incorrectNameDialog();
 			createCreation(event);
 		}
+	}
+	
+	/**
+	 * Refresh the creation in preparation to be overwritten
+	 */
+	public void refreshCreation(String creationName) {
+		Task<Void> refreshTask = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				_creationModel.deleteCreation(creationName);
+				return null;
+			}
+		};
+		
+		creation_list.getItems().remove(creationName);
+		
+		Thread th = new Thread(refreshTask);
+		th.setDaemon(true);
+		th.start();
+		
+	}
+	
+	public void showListeningDialog() {
+		
 	}
 	
  
@@ -321,9 +348,9 @@ public class MainController implements Initializable {
 	 * @param prompt : the message of the prompt
 	 * @return String : the creation name the user entered
 	 */
-	public String creationNamePrompt(String title, String prompt) {
-		TextInputDialog userPrompt = new TextInputDialog(prompt);
-		userPrompt.setHeaderText(title);
+	public String creationNamePrompt() {
+		TextInputDialog userPrompt = new TextInputDialog(CREATION_NAME_DIALOG_DEFAULT_TEXT);
+		userPrompt.setHeaderText(CREATION_NAME_DIALOG_HEADER);
 
 		Optional<String> result = userPrompt.showAndWait();
 
@@ -366,6 +393,11 @@ public class MainController implements Initializable {
 					return null;
 				}
 			};
+			
+			creatingTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
+				// add creation to the list view
+				creation_list.getItems().add(creationName);
+			});
 
 			Thread th = new Thread(creatingTask);
 			th.setDaemon(true);
@@ -373,14 +405,6 @@ public class MainController implements Initializable {
 			
 			// display recording dialog
 			recordingDialog(creationName);
-			
-
-			
-			// add creation to the list view
-			creation_list.getItems().add(creationName);
-			
-
-
 		} else {
 			alert.close();
 		}
