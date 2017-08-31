@@ -48,6 +48,9 @@ public class MainController implements Initializable {
 	private static final String CREATION_AUDIO_DIALOG_HEADER = "Record Audio";
 	private static final String CREATION_AUDIO_DIALOG_MESSAGE = "Press okay to record audio";
 	
+	private static final String RECORDING_TITLE = "Recording";
+	private static final String RECORDING_HEADER = "Recording audio...";
+	
 	private static final String CREATION_SUCCESS_DIALOG_TITLE = "Success!";
 	private static final String CREATION_SUCCESS_DIALOG_HEADER = "Creation Successfully created";
 	
@@ -59,6 +62,10 @@ public class MainController implements Initializable {
 	
 	private static final String CREATION_DELETEION_SUCCESS_DIALOG_TITLE = "Deletion";
 	private static final String CREATION_DELETEION_SUCCESS_DIALOG_HEADER = "Creation deleted";
+	
+	private static final String INVALID_NAME_TITLE = "Empty Craetion Name";
+	private static final String INVALID_NAME_HEADER = "Invalid Creation Name";
+	private static final String INVALID_NAME_MESSAGE = "Please check you have entered a creation name";
 	
 	/* fields */
 	private CreationModel _creationModel;
@@ -84,6 +91,8 @@ public class MainController implements Initializable {
 
 	@FXML
 	private MediaView media_view;
+	
+	private String nowPlaying;
 	
 	///// Start up \\\\\
 	
@@ -208,6 +217,10 @@ public class MainController implements Initializable {
 		// Get the currently selected creation from the list view
 		String creationName = creation_list.getSelectionModel().getSelectedItem();
 		
+		if (nowPlaying != null && nowPlaying.equals(creationName)) {
+			media_view.getMediaPlayer().seek(new Duration(0));
+		} 
+		
 		// Create the media player from the currently selected creation
 		Task<MediaPlayer> playTask = new Task<MediaPlayer>() {
 			@Override
@@ -222,17 +235,6 @@ public class MainController implements Initializable {
 		playTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
 					media_view.setMediaPlayer(playTask.getValue());
 				});
-		
-		media_view.getMediaPlayer().setOnPlaying(() ->{
-			play_button.disarm();
-		});
-		
-		media_view.getMediaPlayer().setOnEndOfMedia(() -> {
-			play_button.arm();
-		});
-		
-
-		
 
 		Thread th = new Thread(playTask);
 		th.setDaemon(true);
@@ -288,13 +290,14 @@ public class MainController implements Initializable {
 				}
 		} else {
 			// Invalid name display error dialog
-			incorrectNameDialog();
-			createCreation(event);
 			record = false;
 		}
 		
 		if (record) {
 			finishCreationPrompt(creationName);
+		} else {
+			incorrectNameDialog();
+			createCreation(event);
 		}
 	}
 	
@@ -304,9 +307,9 @@ public class MainController implements Initializable {
 	 */
 	public void incorrectNameDialog() {
 		Alert alert = new Alert(AlertType.WARNING);
-		alert.setTitle("Empty Craetion Name");
-		alert.setHeaderText("Invalid Creation Name");
-		alert.setContentText("Please check you have entered a creationName");
+		alert.setTitle(INVALID_NAME_TITLE);
+		alert.setHeaderText(INVALID_NAME_HEADER);
+		alert.setContentText(INVALID_NAME_MESSAGE);
 
 		alert.showAndWait();
 	}
@@ -389,8 +392,8 @@ public class MainController implements Initializable {
 	public void recordingDialog(String creationName) {
 		// show recording dialog
 		Alert popup = new Alert(AlertType.INFORMATION);
-		popup.setHeaderText("Recording audio...");
-		popup.setTitle("Recording");
+		popup.setTitle(RECORDING_TITLE);
+		popup.setHeaderText(RECORDING_HEADER);
 		ButtonType dismissButton = new ButtonType("Dismiss", ButtonData.CANCEL_CLOSE);
 		popup.getButtonTypes().setAll(dismissButton);
 		

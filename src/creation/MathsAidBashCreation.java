@@ -157,8 +157,8 @@ public class MathsAidBashCreation implements Creation {
 	 * Combine the audio and video component, creating the final .mp4 product.
 	 */
 	private void combineAudioAndVideo() {
-		String command = "ffmpeg -i " + _videoComponent +" -i " + _audioComponent + " -c:v copy -c:a aac"
-				+ " -strict experimental " + _creationName + MP4;
+		String command = "ffmpeg -i \"" + _videoComponent +"\" -i \"" + _audioComponent + "\" -c:v copy -c:a aac"
+				+ " -strict experimental \"" + _fullFileName +"\"";
 
 		processCommand(command);
 	}

@@ -17,14 +17,14 @@
           <children>
             <SplitPane dividerPositions="0.28691275167785235" focusTraversable="true" orientation="VERTICAL">
               <items>
-                <AnchorPane SplitPane.resizableWithParent="false">
+                <AnchorPane maxHeight="184.0" maxWidth="248.0" minHeight="184.0" minWidth="248.0" SplitPane.resizableWithParent="false">
                            <children>
-                              <MediaView fx:id="creation_thumbnail" fitHeight="184.0" fitWidth="216.0" layoutX="16.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="0.0" />
+                              <MediaView fx:id="creation_thumbnail" fitHeight="184.0" fitWidth="248.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                 </AnchorPane>
                 <AnchorPane SplitPane.resizableWithParent="false">
                   <children>
-                    <ListView fx:id="creation_list" onMouseClicked="#handleListItemSelected" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    <ListView fx:id="creation_list" layoutY="-1.0" minHeight="400.0" minWidth="248.0" onMouseClicked="#handleListItemSelected" prefHeight="400.0" prefWidth="248.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-1.0" />
                   </children>
                 </AnchorPane>
               </items>
