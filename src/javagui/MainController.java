@@ -67,6 +67,10 @@ public class MainController implements Initializable {
 	private static final String INVALID_NAME_HEADER = "Invalid Creation Name";
 	private static final String INVALID_NAME_MESSAGE = "Please check you have entered a creation name";
 	
+	private static final String LISTENING_DIALOG_TITLE = "Review";
+	private static final String LISTENING_DIALOG_HEADER = "Audio successfully recorded!";
+	private static final String LISTENING_DIALOG_MESSAGE = "Would you like to relisten / re-record your audio before finishing?";
+	
 	/* fields */
 	private CreationModel _creationModel;
 
@@ -324,8 +328,53 @@ public class MainController implements Initializable {
 		
 	}
 	
-	public void showListeningDialog() {
+	public void showListeningDialog(String creationName) {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle(LISTENING_DIALOG_TITLE);
+		alert.setHeaderText(LISTENING_DIALOG_HEADER);
+		alert.setContentText(LISTENING_DIALOG_MESSAGE);
 		
+		// Create yes + no buttons
+		ButtonType previewButton = new ButtonType("Preview", ButtonData.OTHER);
+		ButtonType finishButton = new ButtonType("Finish", ButtonData.FINISH);
+		ButtonType reRecordButton = new ButtonType("Rerecord", ButtonData.OTHER);
+		alert.getButtonTypes().setAll(previewButton, finishButton, reRecordButton);
+		
+		// Handle the response
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == previewButton) {
+			previewCreation(creationName);
+			alert.close();
+		} else if (result.get() == finishButton){
+			alert.close();
+			showSuccessAlert(CREATION_SUCCESS_DIALOG_TITLE , CREATION_SUCCESS_DIALOG_HEADER, 
+					"The creation " + creationName + " was successfully created.");
+			// add creation to the list view
+			creation_list.getItems().add(creationName);
+		} else if (result.get() == reRecordButton) {
+			alert.close();
+			refreshCreation(creationName);
+			finishCreationPrompt(creationName);
+		} else {
+			alert.close();
+			refreshCreation(creationName);
+		}
+	}
+	
+	public void previewCreation(String creationName) {
+		Task<Void> previewTask = new Task<Void>() {
+
+			@Override
+			protected Void call() throws Exception {
+				_creationModel.playCreation(creationName);
+				return null;
+			}
+		};
+		previewTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> showListeningDialog(creationName));
+		
+		Thread th = new Thread(previewTask);
+		th.setDaemon(true);
+		th.start();
 	}
 	
  
@@ -394,17 +443,18 @@ public class MainController implements Initializable {
 				}
 			};
 			
+			Alert rec = recordingDialog();
+			
 			creatingTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
-				// add creation to the list view
-				creation_list.getItems().add(creationName);
+				rec.close();
+				showListeningDialog(creationName);
 			});
 
 			Thread th = new Thread(creatingTask);
 			th.setDaemon(true);
 			th.start();
+			rec.show();
 			
-			// display recording dialog
-			recordingDialog(creationName);
 		} else {
 			alert.close();
 		}
@@ -413,24 +463,15 @@ public class MainController implements Initializable {
 	/**
 	 * Shows a dialog which notifies the user the program is recording
 	 */
-	public void recordingDialog(String creationName) {
+	public Alert recordingDialog() {
 		// show recording dialog
 		Alert popup = new Alert(AlertType.INFORMATION);
 		popup.setTitle(RECORDING_TITLE);
 		popup.setHeaderText(RECORDING_HEADER);
 		ButtonType dismissButton = new ButtonType("Dismiss", ButtonData.CANCEL_CLOSE);
 		popup.getButtonTypes().setAll(dismissButton);
-		
-		// hide popup after 3 seconds:
-		PauseTransition delay = new PauseTransition(Duration.seconds(3));
-		delay.setOnFinished(e -> { 
-			popup.close();
-			showSuccessAlert(CREATION_SUCCESS_DIALOG_TITLE , CREATION_SUCCESS_DIALOG_HEADER, 
-					"The creation " + creationName + " was successfully created.");
-		});
 
-		popup.show();
-		delay.play();
+		return popup;
 	}
 	
 	///// Misc \\\\\
