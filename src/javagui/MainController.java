@@ -69,7 +69,8 @@ public class MainController implements Initializable {
 	
 	private static final String LISTENING_DIALOG_TITLE = "Review";
 	private static final String LISTENING_DIALOG_HEADER = "Audio successfully recorded!";
-	private static final String LISTENING_DIALOG_MESSAGE = "Would you like to relisten / re-record your audio before finishing?";
+	private static final String LISTENING_DIALOG_MESSAGE = "Would you like to review your creation or re-record your \n "
+			+ "audio before finishing?";
 	
 	/* fields */
 	private CreationModel _creationModel;
@@ -148,10 +149,7 @@ public class MainController implements Initializable {
 		thumbnailTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED,
 				e -> creation_thumbnail.setMediaPlayer(thumbnailTask.getValue()));
 		
-		Thread th = new Thread(thumbnailTask);
-		th.setDaemon(true);
-		th.start();
-		
+		startBackgroundThread(thumbnailTask);
 	}
 	
 	///// Quit button methods \\\\\
@@ -201,9 +199,7 @@ public class MainController implements Initializable {
 				creation_list.getItems().remove(creationName);
 			});
 			
-			Thread th = new Thread(deletionTask);
-			th.setDaemon(true);
-			th.start();
+			startBackgroundThread(deletionTask);
 		}
 	}
 
@@ -238,11 +234,8 @@ public class MainController implements Initializable {
 		playTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
 					media_view.setMediaPlayer(playTask.getValue());
 				});
-
-		Thread th = new Thread(playTask);
-		th.setDaemon(true);
-		th.start();
 		
+		startBackgroundThread(playTask);
 	}
 	
 	/**
@@ -322,12 +315,14 @@ public class MainController implements Initializable {
 		
 		creation_list.getItems().remove(creationName);
 		
-		Thread th = new Thread(refreshTask);
-		th.setDaemon(true);
-		th.start();
-		
+		startBackgroundThread(refreshTask);
 	}
 	
+	/**
+	 * Shows a dialog which allows the user to review their creation before completetion.
+	 * 
+	 * @param creationName: The name of the creation being made.
+	 */
 	public void showListeningDialog(String creationName) {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setTitle(LISTENING_DIALOG_TITLE);
@@ -338,7 +333,10 @@ public class MainController implements Initializable {
 		ButtonType previewButton = new ButtonType("Preview", ButtonData.OTHER);
 		ButtonType finishButton = new ButtonType("Finish", ButtonData.FINISH);
 		ButtonType reRecordButton = new ButtonType("Rerecord", ButtonData.OTHER);
-		alert.getButtonTypes().setAll(previewButton, finishButton, reRecordButton);
+		ButtonType canelButton = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+		alert.getButtonTypes().setAll(previewButton, finishButton, reRecordButton, canelButton);
+		
+		
 		
 		// Handle the response
 		Optional<ButtonType> result = alert.showAndWait();
@@ -372,9 +370,7 @@ public class MainController implements Initializable {
 		};
 		previewTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> showListeningDialog(creationName));
 		
-		Thread th = new Thread(previewTask);
-		th.setDaemon(true);
-		th.start();
+		startBackgroundThread(previewTask);
 	}
 	
  
@@ -450,9 +446,8 @@ public class MainController implements Initializable {
 				showListeningDialog(creationName);
 			});
 
-			Thread th = new Thread(creatingTask);
-			th.setDaemon(true);
-			th.start();
+			startBackgroundThread(creatingTask);
+			
 			rec.show();
 			
 		} else {
@@ -475,6 +470,17 @@ public class MainController implements Initializable {
 	}
 	
 	///// Misc \\\\\
+	
+	/**
+	 * Starts a background thread
+	 * 
+	 * @param task: the task to be performed in the background thread
+	 */
+	public void startBackgroundThread(Task task) {
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
+	}
 	
 	/**
 	 * Shows an alert which shows an event has successfully executed
