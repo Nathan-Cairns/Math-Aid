@@ -4,8 +4,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import creation.CreationModel;
 import creation.MathsAidCreationModel;
