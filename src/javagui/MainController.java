@@ -77,7 +77,7 @@ public class MainController implements Initializable {
 	private static final String LISTENING_DIALOG_MESSAGE = "Would you like to review your creation or re-record your \n "
 			+ "audio before finishing?";
 	
-	private static final char[] INVALID_CHARS = {'$', '"', '\\'};
+	private static final char[] INVALID_CHARS = {'$', '"', '\\', '.'};
 	
 	/* fields */
 	private CreationModel _creationModel;
