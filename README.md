@@ -16,6 +16,8 @@ Allows a user to create a video with some customized text and audio.
 The user can play and delete these creations using the gui.
 
 ### Invalid Characters
-A creation name cannot contain the following characters: $, \, "
+A creation name cannot contain the following characters: $, \\, ", .
+Leading and trailing spaces are ignored.
+Two creations of the same name cannot exist, however, already existing creations can be overwritten.
 
 ###### Nathan Cairns
