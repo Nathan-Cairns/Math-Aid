@@ -4,10 +4,11 @@ import java.io.File;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import creation.CreationModel;
 import creation.MathsAidCreationModel;
-import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -20,6 +21,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
@@ -46,7 +48,7 @@ public class MainController implements Initializable {
 	
 	private static final String CREATION_AUDIO_DIALOG_TITLE = "Recording Dialog";
 	private static final String CREATION_AUDIO_DIALOG_HEADER = "Record Audio";
-	private static final String CREATION_AUDIO_DIALOG_MESSAGE = "Press okay to record audio";
+	private static final String CREATION_AUDIO_DIALOG_MESSAGE = "Press okay to record audio, you will have 3 seconds.";
 	
 	private static final String RECORDING_TITLE = "Recording";
 	private static final String RECORDING_HEADER = "Recording audio...";
@@ -55,25 +57,31 @@ public class MainController implements Initializable {
 	private static final String CREATION_SUCCESS_DIALOG_HEADER = "Creation Successfully created";
 	
 	private static final String CREATION_DELETE_CONFIRM_TITLE = "Deletion";
-	private static final String CREATION_DELETE_CONFIRM_MESSAGE = "Are you sure you wish to delete ";
+	private static final String CREATION_DELETE_CONFIRM_MESSAGE = "Are you sure you wish to delete: ";
 	
 	private static final String OVERWRITE_CONFIRMATION_TITLE = "Existing Creation";
-	private static final String OVERWRITE_CONFIRMATION_MESSAGE = "Creation already exists do you wish to overwrite ";
+	private static final String OVERWRITE_CONFIRMATION_MESSAGE = "Creation already exists do you wish to overwrite: ";
 	
 	private static final String CREATION_DELETEION_SUCCESS_DIALOG_TITLE = "Deletion";
 	private static final String CREATION_DELETEION_SUCCESS_DIALOG_HEADER = "Creation deleted";
 	
 	private static final String INVALID_NAME_TITLE = "Empty Craetion Name";
 	private static final String INVALID_NAME_HEADER = "Invalid Creation Name";
-	private static final String INVALID_NAME_MESSAGE = "Please check you have entered a creation name";
+	private static final String INVALID_NAME_MESSAGE = "Make sure you have entered a valid creation name\n"
+			+ "-The creation name is not empty\n"
+			+ "-A creation with that name does not already exist\n"
+			+ "-Only contains the valid characters (See Readme)";
 	
 	private static final String LISTENING_DIALOG_TITLE = "Review";
 	private static final String LISTENING_DIALOG_HEADER = "Audio successfully recorded!";
 	private static final String LISTENING_DIALOG_MESSAGE = "Would you like to review your creation or re-record your \n "
 			+ "audio before finishing?";
 	
+	private static final char[] INVALID_CHARS = {'$', '"', '\\'};
+	
 	/* fields */
 	private CreationModel _creationModel;
+	private String _nowPlaying;
 
 	/* FXML attributes */
 	@FXML
@@ -96,8 +104,6 @@ public class MainController implements Initializable {
 
 	@FXML
 	private MediaView media_view;
-	
-	private String nowPlaying;
 	
 	///// Start up \\\\\
 	
@@ -187,6 +193,8 @@ public class MainController implements Initializable {
 			Task<Void> deletionTask = new Task<Void>() {
 				@Override
 				protected Void call() throws Exception {
+					
+	
 					// Remove from model and delete file
 					_creationModel.deleteCreation(creationName); 
 					return null;
@@ -196,6 +204,9 @@ public class MainController implements Initializable {
 				showSuccessAlert(CREATION_DELETEION_SUCCESS_DIALOG_TITLE, CREATION_DELETEION_SUCCESS_DIALOG_HEADER, 
 						"The creation " + creationName + " was successfully deleted.");
 				// Remove from the list_view
+				if (creation_thumbnail.getMediaPlayer() != null) {
+				creation_thumbnail.getMediaPlayer().dispose(); 
+				}
 				creation_list.getItems().remove(creationName);
 			});
 			
@@ -216,7 +227,11 @@ public class MainController implements Initializable {
 		// Get the currently selected creation from the list view
 		String creationName = creation_list.getSelectionModel().getSelectedItem();
 		
-		if (nowPlaying != null && nowPlaying.equals(creationName)) {
+		if (creationName == null) {
+			return;
+		}
+		
+		if (_nowPlaying != null && _nowPlaying.equals(creationName)) {
 			media_view.getMediaPlayer().seek(new Duration(0));
 		} 
 		
@@ -224,9 +239,14 @@ public class MainController implements Initializable {
 		Task<MediaPlayer> playTask = new Task<MediaPlayer>() {
 			@Override
 			protected MediaPlayer call() throws Exception {
-				MediaPlayer mp = new MediaPlayer(createMedia(creationName));
-				mp.setAutoPlay(true);
-				return mp;
+				try {
+					MediaPlayer mp = new MediaPlayer(createMedia(creationName));
+					mp.setAutoPlay(true);
+					return mp;
+				} catch (Exception e) {
+					e.printStackTrace();
+				} //TODO
+				return null;
 			}
 		};
 		
@@ -248,6 +268,7 @@ public class MainController implements Initializable {
 	public Media createMedia(String creationName) {
 		// Get the file name from the CreationModel
 		File f = _creationModel.getCreationFile(creationName);
+	
 		String mediaUrl = f.toURI().toString();
 		
 		// Create the media
@@ -267,10 +288,9 @@ public class MainController implements Initializable {
 	public void createCreation(ActionEvent event) {
 		// prompt the user for a creation name
 		String creationName = creationNamePrompt();
-
 		
 		// Check the validity of the name and proceed with recording
-		if (creationName == null || creationName.equals("")) {
+		if (creationName == null) {
 			return;
 		}
 		
@@ -278,7 +298,7 @@ public class MainController implements Initializable {
 		creationName = creationName.trim();
 		
 		boolean record = false;
-		if (!_creationModel.containsCreation(creationName) && !creationName.equals("")) {
+		if (!_creationModel.containsCreation(creationName) && !creationName.equals("") && containsValidChars(creationName)) {
 			// Valid name proceed with recording
 			record = true;
 		} else if (_creationModel.containsCreation(creationName)) {
@@ -300,6 +320,21 @@ public class MainController implements Initializable {
 		}
 	}
 	
+	/**
+	 * Makes sure string does not contain any invalid characters
+	 * 
+	 * @param creationName: The string to check
+	 * @return: True if contained all valid chars, false otherwise.
+	 */
+	public boolean containsValidChars(String creationName) {
+		for (char invalidCharacter: INVALID_CHARS) {
+			if (creationName.contains("" + invalidCharacter)) {
+				return false;
+			}
+		}
+		return true;
+	}
+		
 	/**
 	 * Refresh the creation in preparation to be overwritten
 	 */
@@ -336,8 +371,6 @@ public class MainController implements Initializable {
 		ButtonType canelButton = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
 		alert.getButtonTypes().setAll(previewButton, finishButton, reRecordButton, canelButton);
 		
-		
-		
 		// Handle the response
 		Optional<ButtonType> result = alert.showAndWait();
 		if (result.get() == previewButton) {
@@ -364,7 +397,10 @@ public class MainController implements Initializable {
 
 			@Override
 			protected Void call() throws Exception {
-				_creationModel.playCreation(creationName);
+				MediaPlayer mp = new MediaPlayer(createMedia(creationName));
+				mp.play();
+				
+				//_creationModel.playCreation(creationName);
 				return null;
 			}
 		};
@@ -378,10 +414,13 @@ public class MainController implements Initializable {
 	 * Warning dialog which is displayed when user enters an incorrect creationName
 	 */
 	public void incorrectNameDialog() {
+		Label l = new Label(INVALID_NAME_MESSAGE);
+		l.setWrapText(true);
+		
 		Alert alert = new Alert(AlertType.WARNING);
 		alert.setTitle(INVALID_NAME_TITLE);
 		alert.setHeaderText(INVALID_NAME_HEADER);
-		alert.setContentText(INVALID_NAME_MESSAGE);
+		alert.getDialogPane().setContent(l);
 
 		alert.showAndWait();
 	}
@@ -420,10 +459,12 @@ public class MainController implements Initializable {
 	 */
 	public void finishCreationPrompt(String creationName) {
 		// Create the alert
+		Label l = new Label(CREATION_AUDIO_DIALOG_MESSAGE);
+		l.setWrapText(true);
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setTitle(CREATION_AUDIO_DIALOG_TITLE);
 		alert.setHeaderText(CREATION_AUDIO_DIALOG_HEADER);
-		alert.setContentText(CREATION_AUDIO_DIALOG_MESSAGE);
+		alert.getDialogPane().setContent(l);
 		
 		// Handle button clicks
 		Optional<ButtonType> result = alert.showAndWait();
@@ -439,10 +480,10 @@ public class MainController implements Initializable {
 				}
 			};
 			
-			Alert rec = recordingDialog();
+			Alert rec = recordingDialog(creationName);
 			
 			creatingTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, e -> {
-				rec.close();
+				rec.hide();
 				showListeningDialog(creationName);
 			});
 
@@ -458,14 +499,15 @@ public class MainController implements Initializable {
 	/**
 	 * Shows a dialog which notifies the user the program is recording
 	 */
-	public Alert recordingDialog() {
+	public Alert recordingDialog(String creationName) {
 		// show recording dialog
 		Alert popup = new Alert(AlertType.INFORMATION);
 		popup.setTitle(RECORDING_TITLE);
 		popup.setHeaderText(RECORDING_HEADER);
-		ButtonType dismissButton = new ButtonType("Dismiss", ButtonData.CANCEL_CLOSE);
+		ButtonType dismissButton = new ButtonType("Dimiss", ButtonData.CANCEL_CLOSE);
 		popup.getButtonTypes().setAll(dismissButton);
-
+		refreshCreation(creationName);
+		
 		return popup;
 	}
 	
@@ -476,7 +518,7 @@ public class MainController implements Initializable {
 	 * 
 	 * @param task: the task to be performed in the background thread
 	 */
-	public void startBackgroundThread(Task task) {
+	private void startBackgroundThread(@SuppressWarnings("rawtypes") Task task) {
 		Thread th = new Thread(task);
 		th.setDaemon(true);
 		th.start();
@@ -505,9 +547,11 @@ public class MainController implements Initializable {
 	 */
 	public boolean showWarningDialog(String title, String message, String creationName) {
 		// Create alert
+		Label l = new Label(message + creationName);
+		l.setWrapText(true);
 		Alert alert = new Alert(Alert.AlertType.WARNING);
-		alert.setTitle(title);
-		alert.setContentText(message + creationName);
+		alert.setTitle(title);		
+		alert.getDialogPane().setContent(l);
 		
 		// Create yes + no buttons
 		ButtonType yesButton = new ButtonType("Yes", ButtonData.YES);
