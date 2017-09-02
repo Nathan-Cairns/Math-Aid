@@ -12,12 +12,12 @@ Open a terminal in the directory where the jar is stored. Run the command:
 java -jar Math-Aid.jar
 
 ### Functionality
-Allows a user to create a video with some customized text and audio. \n
+Allows a user to create a video with some customized text and audio.  <br />
 The user can play and delete these creations using the gui.
 
 ### Invalid Characters
-A creation name cannot contain the following characters: $, \\, ", . \n
-Leading and trailing spaces are ignored. \n
+A creation name cannot contain the following characters: $, \\, ", .  <br />
+Leading and trailing spaces are ignored.  <br />
 Two creations of the same name cannot exist, however, already existing creations can be overwritten.
 
 ###### Nathan Cairns
