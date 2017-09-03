@@ -7,8 +7,8 @@ The authoring component of a voice-activated Mathematics tutoring aid.
 * Appropriate libraries for javafx media player (see javafx reqs)
 
 ### How to execute
-Open a terminal in the directory where the jar is stored. Run the command:
-For the javafx gui: java -jar Math-Aid.jar
+Open a terminal in the directory where the jar is stored. Run the command: <br />
+For the javafx gui: java -jar Math-Aid.jar <br />
 For the Bash CLI: bash maths_aid
 
 ### Functionality
