@@ -8,8 +8,8 @@ The authoring component of a voice-activated Mathematics tutoring aid.
 
 ### How to execute
 Open a terminal in the directory where the jar is stored. Run the command:
-
-java -jar Math-Aid.jar
+For the javafx gui: java -jar Math-Aid.jar
+For the Bash CLI: bash maths_aid
 
 ### Functionality
 Allows a user to create a video with some customized text and audio.  <br />
